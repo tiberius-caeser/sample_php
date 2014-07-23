@@ -1,19 +1,34 @@
 language: php
 
-php: 
+php:
   - 5.3
   - 5.4
   - 5.5
   - 5.6
-  
-before_script: 
+
+env:
+  global:
+    - SLACK_ORG=shippable PROJECT=sample-php
+    - secure: CeJ/+G5DWFS544F5ySvkTqm0aIDRd2ikeOUABVbdt5RyLo4YMjBwTnPPlQNLtb9P5/rZvbLpazP5Yw1NOOW+fUce55qowpVwcBGdm+YGr2bWXVLHZNVG43Aus9NvZDZ4SrC7qE8KRMR3jmsq3gM4YBErNaBpSBqwcuTH7OLT8mVxFS/Cp1BnCO/Z7Kc6fHkHxFA/XIBeLGDvbo0EqwGC1hi/YkPkORjVj4blVDfudzyeomVOsTXE4ZNrB8Dn2ULekNX3qiZsQ4cZGEXxV+h3o/qOtrNJQvq8OqP5H0/7CebUxkinFwtx/ms/pebptsYkJ661v9p/WjkQBf2MJscPCw==
+
+before_script:
   - mkdir -p shippable/codecoverage
   - mkdir -p shippable/testresults
 
 script:
    - phpunit  --log-junit shippable/testresults/junit.xml --coverage-xml shippable/codecoverage tests/calculator_test.php
 
-notifications:
-   email: false
+after_failure:
+  - python slack_notifier.py --project $PROJECT --org $SLACK_ORG --token $SLACK_TOKEN
 
-      
+after_success:
+  - python slack_notifier.py --project $PROJECT --org $SLACK_ORG --token $SLACK_TOKEN -s
+
+notifications:
+     email:
+         recipients:
+             - avniel+buildsample@shippable.com
+         on_success: never
+         on_failure: always
+
+reset_minion: true
